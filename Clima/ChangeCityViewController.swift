@@ -2,14 +2,14 @@
 //  ChangeCityViewController.swift
 //  WeatherApp
 //
-//  Created by Angela Yu on 23/08/2015.
-//  Copyright (c) 2015 London App Brewery. All rights reserved.
+//  Created by Mattia Marini on 18/07/2019.
+//  Copyright © 2019 Mattia Marini. All rights reserved.
 //
 
 import UIKit
 
 
-//Write the protocol declaration here:
+//Writing protocol to change the city for forecast:
 
 protocol ChangeCityDelegate {
     func userChangedCityName(city : String)
@@ -17,33 +17,20 @@ protocol ChangeCityDelegate {
 
 class ChangeCityViewController: UIViewController {
     
-    //Declare the delegate variable here:
+    //Protocol needs a delegate
     var delegate : ChangeCityDelegate?
     
-    //This is the pre-linked IBOutlets to the text field:
+    //Declaring text field Outlet and 'Get Weather 'Action button:
     @IBOutlet weak var changeCityTextField: UITextField!
-
-    
-    //This is the IBAction that gets called when the user taps on the "Get Weather" button:
     @IBAction func getWeatherPressed(_ sender: AnyObject) {
         
-        
-        
-        //1 Get the city name the user entered in the text field
+        //Catch city name entered in text field, pass it into a function, then dismiss segue and go back to main view
         let cityName = changeCityTextField.text!
-        
-        
-        //2 If we have a delegate set, call the method userEnteredANewCityName
         delegate?.userChangedCityName(city: cityName)
-        
-        //3 dismiss the Change City View Controller to go back to the WeatherViewController
         self.dismiss(animated: true, completion: nil)
-                
     }
     
-    
-
-    //This is the IBAction that gets called when the user taps the back button. It dismisses the ChangeCityViewController.
+    //Dismiss ChangeCityViewController by pressing 'Back'.
     @IBAction func backButtonPressed(_ sender: AnyObject) {
         self.dismiss(animated: true, completion: nil)
     }
