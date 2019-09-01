@@ -16,7 +16,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     //Constants
     let WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather"
     let APP_ID = "d0d5c4cf12f4ef0bf41d2749c9eb2eb5"
-
+    
     //Declare instance variables
     let locationManager = CLLocationManager()
     let weatherDataModel = WeatherDataModel()
@@ -42,41 +42,49 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     /***************************************************************/
     
     //Getting Weather Data method:
-    func getWeatherData(url : String, parameters : [String : String]) {
-        Alamofire.request(url, method : .get, parameters : parameters).responseJSON {
-            response in
-            if response.result.isSuccess {
-                let weatherJSON : JSON = JSON(response.result.value!)
+   
+    func getWeatherData2(parameters : [String : String]!) {
+        
+        let finalUrl = "\(WEATHER_URL)?lat=\(parameters["lat"]!.description)&lon=\(parameters["lon"]!.description)&APPID=\(parameters["appid"]!.description)"
+        let request = URLRequest(url: URL(string: finalUrl)!)
+        let session = URLSession.shared
+        _ = session.dataTask(with: request) { (data, response, error) in
+            
+            if let dataReceived = data {
                 
-                self.updateWeatherData(json: weatherJSON)
-                
-            } else {
-                print("Error \(String(describing: response.result.error))")
-                self.cityLabel.text = "Connection Issues"
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: dataReceived, options:.allowFragments) as? [String: AnyObject] {
+                        
+                        self.updateWeatherData(json)
+                      
+                    }
+                    
+                } catch {
+                    
+                    print("error serializing JSON: \(error)")
+                    
+                }
             }
-        }
+        } .resume()
+        
     }
-
     
     //MARK: - JSON Parsing
     /***************************************************************/
    
     
     //Updating Weather Data method:
-    func updateWeatherData (json : JSON) {
+    
+    func updateWeatherData(_ json: [String : AnyObject]) {
         
-        if let tempResults = json["main"]["temp"].double {
-        
-        weatherDataModel.temperature = Int(tempResults - 273.15)
-        weatherDataModel.city = json["name"].stringValue
-        weatherDataModel.condition = json["weather"][0]["id"].intValue
-        weatherDataModel.weatherIconName = weatherDataModel.updateWeatherIcon(condition: weatherDataModel.condition)
-        
-        updateUIWithWeatherData()
+        if let temperature = json["main"]?["temp"] as? Double {
+            self.weatherDataModel.temperature = Int(temperature - 273.15)
+            self.weatherDataModel.city = json["name"] as! String
+            let weather : Array<Dictionary<String, AnyObject>> = json["weather"] as! Array
+            self.weatherDataModel.condition = weather[0]["id"] as! Int
+            self.weatherDataModel.weatherIconName = self.weatherDataModel.updateWeatherIcon(condition: self.weatherDataModel.condition)
             
-        }
-        else {
-        cityLabel.text = "Weather Unavailable"
+            self.updateUIWithWeatherData()
         }
         
     }
@@ -114,7 +122,8 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
             
             let params : [String : String] = ["lat" : latitude, "lon" : longitude, "appid" : APP_ID]
             
-            getWeatherData(url : WEATHER_URL, parameters : params)
+            //getWeatherData(url : WEATHER_URL, parameters : params)
+            getWeatherData2(parameters: params)
             
         }
     }
@@ -137,7 +146,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     func userChangedCityName(city: String) {
         let params : [String : String] = ["q" : city, "appid" : APP_ID]
         
-        getWeatherData(url: WEATHER_URL, parameters: params)
+        getWeatherData2(parameters: params)
         
     }
 
